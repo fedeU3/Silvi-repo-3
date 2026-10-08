@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Tu Wrapped 💚</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html, body {
+            height: 100%;
+            background: #000;
+        }
+        body {
+            font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+        }
+        img {
+            pointer-events: none;
+            -webkit-user-drag: none;
+        }
+        #app {
+            position: relative;
+            width: 100%;
+            max-width: 460px;
+            height: 100dvh;
+            overflow: hidden;
+            background: #121212;
+        }
+        @media (min-width: 600px) {
+            #app {
+                height: min(92dvh, 860px);
+                border-radius: 24px;
+                box-shadow: 0 20px 60px rgba(30, 215, 96, 0.15);
+            }
+        }
+
+        /* ---------- Barras de progreso ---------- */
+        #progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 4px;
+            padding: 12px 12px 0;
+            padding-top: max(12px, env(safe-area-inset-top));
+            z-index: 20;
+            transition: opacity 0.3s ease;
+        }
+        #progress.hidden {
+            opacity: 0;
+        }
+        .bar {
+            flex: 1;
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 0;
+            background: #fff;
+        }
+        #soundBtn {
+            position: absolute;
+            top: max(24px, calc(env(safe-area-inset-top) + 12px));
+            right: 12px;
+            z-index: 21;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.25);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+        }
+
+        /* ---------- Slides ---------- */
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 64px 24px max(32px, env(safe-area-inset-bottom));
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+            overflow: hidden;
+        }
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .slide > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Formas decorativas estilo Wrapped */
+        .blob {
+            position: absolute;
+            z-index: 1;
+            border-radius: 50%;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+        .slide.active .blob {
+            animation: float 9s ease-in-out infinite alternate;
+        }
+        .blob.b2 {
+            animation-duration: 12s !important;
+            animation-direction: alternate-reverse !important;
+        }
+        @keyframes float {
+            from { transform: translate(0, 0) rotate(0deg) scale(1); }
+            to { transform: translate(30px, -40px) rotate(40deg) scale(1.15); }
+        }
+
+        /* Entrada escalonada */
+        .reveal {
+            opacity: 0;
+        }
+        .slide.active .reveal {
+            animation: up 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+            animation-delay: calc(var(--i, 0) * 0.35s + 0.25s);
+        }
+        @keyframes up {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .kicker {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 16px;
+        }
+        .huge {
+            font-size: clamp(64px, 22vw, 104px);
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -3px;
+            margin-bottom: 12px;
+        }
+        .big {
+            font-size: clamp(32px, 10vw, 46px);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+            overflow-wrap: anywhere;
+        }
+        .note {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.45;
+            opacity: 0.9;
+        }
+
+        /* Intro */
+        .intro {
+            text-align: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .intro .logo {
+            font-size: 72px;
+            margin-bottom: 24px;
+        }
+        .tap-hint {
+            margin-top: 48px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            50% { opacity: 0.35; }
+        }
+
+        /* Listas top */
+        .top-list {
+            list-style: none;
+            margin-top: 8px;
+        }
+        .top-list li {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+        }
+        .top-list .num {
+            font-size: 40px;
+            font-weight: 900;
+            width: 40px;
+            flex-shrink: 0;
+        }
+        .top-list .cover {
+            width: 56px;
+            height: 56px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .top-list .t {
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+        .top-list .s {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        /* Fotos */
+        .photo-frame {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            max-height: 52dvh;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 8px 0 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            transform: rotate(-2deg);
+        }
+        .photo-frame img,
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0 14px, rgba(0,0,0,0.25) 14px 28px);
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            padding: 16px;
+        }
+        .photo-placeholder span {
+            font-size: 40px;
+        }
+
+        /* Resumen final */
+        .summary-card {
+            background: #1ed760;
+            color: #121212;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .summary-head {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .summary-head .avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .summary-head .avatar img,
+        .summary-head .avatar .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .summary-head .avatar .photo-placeholder {
+            font-size: 0;
+        }
+        .summary-head .avatar .photo-placeholder span {
+            font-size: 28px;
+        }
+        .summary-head h2 {
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+        .summary-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .summary-cols h3,
+        .summary-stats h3 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .summary-cols ol {
+            list-style: none;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+        .summary-cols ol li {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .summary-stats .v {
+            font-size: 26px;
+            font-weight: 900;
+        }
+        .summary-foot {
+            margin-top: 16px;
+            font-size: 13px;
+            font-weight: 700;
+            opacity: 0.75;
+        }
+
+        /* Pregunta */
+        .question {
+            text-align: center;
+            align-items: center;
+        }
+        .q-buttons {
+            position: relative;
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+            min-height: 80px;
+        }
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 14px 32px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.2s ease, font-size 0.25s ease;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-yes {
+            background: #1ed760;
+            color: #121212;
+        }
+        .btn-no {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            max-width: 260px;
+            transition: transform 0.2s ease, left 0.25s ease, top 0.25s ease;
+        }
+        .btn-no.escaping {
+            position: absolute;
+            z-index: 5;
+        }
+
+        /* Ticket */
+        .ticket-wrap {
+            align-items: center;
+            text-align: center;
+        }
+        .ticket {
+            width: 100%;
+            background: #fff;
+            color: #121212;
+            border-radius: 16px;
+            overflow: hidden;
+            text-align: left;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+        .ticket-top {
+            background: #1ed760;
+            padding: 20px 22px;
+        }
+        .ticket-top small {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .ticket-top h2 {
+            font-size: 28px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-top: 4px;
+        }
+        .ticket-cut {
+            position: relative;
+            height: 0;
+            border-top: 2px dashed #ccc;
+            margin: 0 18px;
+        }
+        .ticket-cut::before,
+        .ticket-cut::after {
+            content: '';
+            position: absolute;
+            top: -13px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #7b2ff7;
+        }
+        .ticket-cut::before { left: -31px; }
+        .ticket-cut::after { right: -31px; }
+        .ticket-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 16px;
+            padding: 20px 22px 22px;
+        }
+        .ticket-body .full {
+            grid-column: 1 / -1;
+        }
+        .ticket-body small {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #777;
+        }
+        .ticket-body b {
+            font-size: 17px;
+            font-weight: 900;
+        }
+        .ticket-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 15px;
+            padding: 12px 22px;
+        }
+        .btn-white {
+            background: #fff;
+            color: #121212;
+            font-size: 15px;
+            padding: 12px 22px;
+        }
+
+        #confetti {
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        /* Celulares chicos (iPhone SE, etc.) */
+        @media (max-height: 700px) {
+            .slide { padding-top: 52px; }
+            .big { font-size: 30px; margin-bottom: 10px; }
+            .kicker { font-size: 17px; margin-bottom: 10px; }
+            .top-list li { padding: 7px 0; }
+            .top-list .cover { width: 46px; height: 46px; }
+            .photo-frame { max-height: 46dvh; margin-bottom: 14px; }
+            .summary-head .avatar { width: 72px; height: 72px; }
+            .ticket-body { gap: 10px 16px; padding: 16px 22px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .slide.active .blob,
+            .tap-hint {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="progress"></div>
+        <button id="soundBtn" type="button" aria-label="Sonido">🔊</button>
+        <div id="slides"></div>
+        <canvas id="confetti"></canvas>
+    </div>
+
+    <script>
+        /* =====================================================================
+           ✏️  EDITÁ TODO ACÁ. El resto del archivo no hace falta tocarlo.
+           - Los números, canciones y lugares son de ejemplo: cambialos por los reales.
+           - Las fotos van en la carpeta images/ (si falta alguna, se ve un recuadro).
+           - Si ponés un archivo music.mp3 al lado del index.html, suena de fondo.
+           ===================================================================== */
+        const CONFIG = {
+            para: 'Silvi',
+            de: 'Fede',
+            anio: 2026,
+            musica: 'music.mp3',
+
+            slides: [
+                {
+                    tipo: 'intro',
+                    fondo: '#121212',
+                    titulo: 'Silvi, tu {anio} Wrapped llegó',
+                    sub: 'Edición especial: vos y yo 💚'
+                },
+                {
+                    tipo: 'numero',
+                    fondo: '#7b2ff7',
+                    antes: 'Este año nos vimos',
+                    numero: 187,
+                    despues: 'días',
+                    nota: 'Eso te pone en el top 0,001% de personas que más me vieron. Felicitaciones.'
+                },
+                {
+                    tipo: 'numero',
+                    fondo: '#ff4632',
+                    antes: 'Nos mandamos',
+                    numero: 48213,
+                    despues: 'mensajes',
+                    nota: 'El 30% fueron stickers. No voy a decir de quién.'
+                },
+                {
+                    tipo: 'lista',
+                    fondo: '#1e3264',
+                    titulo: 'Nuestras canciones más escuchadas',
+                    items: [
+                        { emoji: '🎵', titulo: 'Canción 1', sub: 'Artista' },
+                        { emoji: '🎶', titulo: 'Canción 2', sub: 'Artista' },
+                        { emoji: '🎧', titulo: 'Canción 3', sub: 'Artista' }
+                    ]
+                },
+                {
+                    tipo: 'foto',
+                    fondo: '#f573a0',
+                    titulo: 'La foto del año',
+                    foto: 'images/foto-1.jpg',
+                    texto: 'Reproducida 1.000 veces en mi galería.'
+                },
+                {
+                    tipo: 'lista',
+                    fondo: '#148a08',
+                    titulo: 'Los lugares donde más nos vimos',
+                    items: [
+                        { emoji: '🏠', titulo: 'Tu casa', sub: 'Sede oficial' },
+                        { emoji: '🍕', titulo: 'La pizzería de siempre', sub: 'Pedido de siempre' },
+                        { emoji: '🌳', titulo: 'La plaza', sub: 'Mate incluido' }
+                    ]
+                },
+                {
+                    tipo: 'texto',
+                    fondo: '#f59b23',
+                    kicker: 'Tu personalidad de pareja es…',
+                    grande: 'La que siempre tiene frío 🥶',
+                    nota: 'Compartís este perfil con el 100% de las personas que me roban el buzo.'
+                },
+                {
+                    tipo: 'texto',
+                    fondo: '#509bf5',
+                    kicker: 'La frase que más dijiste',
+                    grande: '"¿Qué comemos?"',
+                    nota: 'Dicha aproximadamente 3 veces por día. Respondida bien 0 veces.'
+                },
+                {
+                    tipo: 'foto',
+                    fondo: '#af2896',
+                    titulo: 'Momento más reproducido',
+                    foto: 'images/foto-2.jpg',
+                    texto: 'Lo volvería a vivir en loop.'
+                },
+                {
+                    tipo: 'resumen',
+                    fondo: '#121212',
+                    foto: 'images/foto-1.jpg',
+                    titulo: 'Silvi & Fede {anio}',
+                    col1: { titulo: 'Top canciones', items: ['Canción 1', 'Canción 2', 'Canción 3'] },
+                    col2: { titulo: 'Top lugares', items: ['Tu casa', 'La pizzería', 'La plaza'] },
+                    stats: [
+                        { titulo: 'Días juntos', valor: '187' },
+                        { titulo: 'Género top', valor: 'Amor' }
+                    ]
+                },
+                {
+                    tipo: 'pregunta',
+                    fondo: '#7b2ff7',
+                    kicker: 'Y para cerrar el año como se debe…',
+                    pregunta: '¿Querés salir conmigo el sábado?',
+                    si: 'Sí 💚',
+                    no: 'No',
+                    mensajesNo: [
+                        '¿Tas segura?',
+                        '¿Tas muy muy segura?',
+                        'Bah',
+                        'Dale',
+                        'No seas malaaaaa',
+                        'Ese botón no anda',
+                        'Probá con el verde',
+                        '¿Ah sí?'
+                    ]
+                },
+                {
+                    tipo: 'ticket',
+                    fondo: '#7b2ff7',
+                    titulo: 'VAMOOOOOOOOOOO 🎉',
+                    evento: 'Cita sorpresa',
+                    fecha: 'Sábado 18/10',
+                    hora: '20:30',
+                    lugar: 'Secreto 🤫',
+                    dressCode: 'Linda como siempre',
+                    admite: '2 personas (vos y yo)'
+                }
+            ]
+        };
+
+        /* ===================================================================== */
+
+        const SLIDE_MS = { numero: 6500, lista: 8000, foto: 6500, texto: 6500, resumen: 10000 };
+        const BLOB_COLORS = ['#1ed760', '#f573a0', '#f59b23', '#509bf5', '#ff4632', '#cdf564', '#7b2ff7'];
+
+        const slidesEl = document.getElementById('slides');
+        const progressEl = document.getElementById('progress');
+        const soundBtn = document.getElementById('soundBtn');
+        const confettiCanvas = document.getElementById('confetti');
+
+        const fill = (s) => s.replace('{anio}', CONFIG.anio);
+        const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+        function photoHtml(src) {
+            return `<img src="${esc(src)}" alt="" onerror="this.outerHTML='<div class=&quot;photo-placeholder&quot;><span>📷</span>Poné tu foto en ${esc(src)}</div>'">`;
+        }
+
+        function blobsHtml(bg, i) {
+            const others = BLOB_COLORS.filter((c) => c.toLowerCase() !== bg.toLowerCase());
+            const a = others[i % others.length];
+            const b = others[(i + 3) % others.length];
+            return `
+                <div class="blob" style="background:${a};width:260px;height:260px;top:-90px;right:-110px;border-radius:${i % 2 ? '50%' : '38% 62% 55% 45%'}"></div>
+                <div class="blob b2" style="background:${b};width:200px;height:200px;bottom:-80px;left:-70px;border-radius:${i % 2 ? '30%' : '50%'}"></div>`;
+        }
+
+        function renderSlide(s, i) {
+            const el = document.createElement('section');
+            el.className = 'slide';
+            el.style.background = s.fondo;
+            let html = '';
+
+            switch (s.tipo) {
+                case 'intro':
+                    el.classList.add('intro');
+                    html = `
+                        <div class="logo reveal" style="--i:0">💚</div>
+                        <h1 class="big reveal" style="--i:1">${esc(fill(s.titulo))}</h1>
+                        <p class="note reveal" style="--i:2">${esc(s.sub)}</p>
+                        <p class="tap-hint reveal" style="--i:3">Tocá para empezar</p>`;
+                    break;
+                case 'numero':
+                    html = `
+                        <p class="kicker reveal" style="--i:0">${esc(s.antes)}</p>
+                        <p class="huge reveal" style="--i:1" data-count="${s.numero}">0</p>
+                        <p class="big reveal" style="--i:1">${esc(s.despues)}</p>
+                        <p class="note reveal" style="--i:3">${esc(s.nota)}</p>`;
+                    break;
+                case 'lista':
+                    html = `
+                        <h2 class="big reveal" style="--i:0">${esc(s.titulo)}</h2>
+                        <ol class="top-list">
+                            ${s.items.map((it, n) => `
+                                <li class="reveal" style="--i:${n + 1}">
+                                    <span class="num">${n + 1}</span>
+                                    <span class="cover">${esc(it.emoji || '')}</span>
+                                    <span><div class="t">${esc(it.titulo)}</div><div class="s">${esc(it.sub || '')}</div></span>
+                                </li>`).join('')}
+                        </ol>`;
+                    break;
+                case 'foto':
+                    html = `
+                        <h2 class="big reveal" style="--i:0">${esc(s.titulo)}</h2>
+                        <div class="photo-frame reveal" style="--i:1">${photoHtml(s.foto)}</div>
+                        <p class="note reveal" style="--i:2">${esc(s.texto)}</p>`;
+                    break;
+                case 'texto':
+                    html = `
+                        <p class="kicker reveal" style="--i:0">${esc(s.kicker)}</p>
+                        <h2 class="big reveal" style="--i:1.5">${esc(s.grande)}</h2>
+                        <p class="note reveal" style="--i:3">${esc(s.nota)}</p>`;
+                    break;
+                case 'resumen':
+                    html = `
+                        <div class="summary-card reveal" style="--i:0">
+                            <div class="summary-head">
+                                <div class="avatar">${photoHtml(s.foto)}</div>
+                                <h2>${esc(fill(s.titulo))}</h2>
+                            </div>
+                            <div class="summary-cols">
+                                ${[s.col1, s.col2].map((c) => `
+                                    <div><h3>${esc(c.titulo)}</h3><ol>${c.items.map((t, n) => `<li>${n + 1} ${esc(t)}</li>`).join('')}</ol></div>`).join('')}
+                            </div>
+                            <div class="summary-stats">
+                                ${s.stats.map((st) => `<div><h3>${esc(st.titulo)}</h3><div class="v">${esc(st.valor)}</div></div>`).join('')}
+                            </div>
+                            <p class="summary-foot">💚 Wrapped de ${esc(CONFIG.de)} para ${esc(CONFIG.para)}</p>
+                        </div>`;
+                    break;
+                case 'pregunta':
+                    el.classList.add('question');
+                    html = `
+                        <p class="kicker reveal" style="--i:0">${esc(s.kicker)}</p>
+                        <h2 class="big reveal" style="--i:1">${esc(s.pregunta)}</h2>
+                        <div class="q-buttons reveal" style="--i:2">
+                            <button type="button" class="btn btn-yes">${esc(s.si)}</button>
+                            <button type="button" class="btn btn-no">${esc(s.no)}</button>
+                        </div>`;
+                    break;
+                case 'ticket':
+                    el.classList.add('ticket-wrap');
+                    html = `
+                        <h2 class="big reveal" style="--i:0">${esc(s.titulo)}</h2>
+                        <div class="ticket reveal" style="--i:1">
+                            <div class="ticket-top">
+                                <small>Ticket · Admite ${esc(s.admite)}</small>
+                                <h2>${esc(s.evento)}</h2>
+                            </div>
+                            <div class="ticket-cut"></div>
+                            <div class="ticket-body">
+                                <div><small>Fecha</small><b>${esc(s.fecha)}</b></div>
+                                <div><small>Hora</small><b>${esc(s.hora)}</b></div>
+                                <div class="full"><small>Lugar</small><b>${esc(s.lugar)}</b></div>
+                                <div class="full"><small>Dress code</small><b>${esc(s.dressCode)}</b></div>
+                            </div>
+                        </div>
+                        <div class="ticket-actions reveal" style="--i:2">
+                            <button type="button" class="btn btn-white" data-action="download">Guardar ticket</button>
+                            <button type="button" class="btn btn-ghost" data-action="replay">Ver de nuevo</button>
+                        </div>`;
+                    break;
+            }
+
+            el.innerHTML = (s.tipo === 'intro' ? '' : blobsHtml(s.fondo, i)) + html;
+            return el;
+        }
+
+        const slideEls = CONFIG.slides.map((s, i) => {
+            const el = renderSlide(s, i);
+            slidesEl.appendChild(el);
+            return el;
+        });
+
+        // Una barra por slide, sin contar la intro
+        const bars = CONFIG.slides.slice(1).map(() => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.innerHTML = '<div class="bar-fill"></div>';
+            progressEl.appendChild(bar);
+            return bar.firstChild;
+        });
+
+        /* ---------- Navegación tipo stories ---------- */
+        let current = 0;
+        let elapsed = 0;
+        let paused = false;
+        let lastFrame = performance.now();
+
+        function duration(i) {
+            return SLIDE_MS[CONFIG.slides[i].tipo] || 0;
+        }
+
+        function show(i) {
+            i = Math.max(0, Math.min(CONFIG.slides.length - 1, i));
+            slideEls[current].classList.remove('active');
+            current = i;
+            elapsed = 0;
+            const el = slideEls[current];
+            // Reiniciar animaciones de entrada
+            el.classList.remove('active');
+            void el.offsetWidth;
+            el.classList.add('active');
+            progressEl.classList.toggle('hidden', current === 0);
+            bars.forEach((b, n) => {
+                b.style.width = n + 1 < current ? '100%' : '0%';
+            });
+            el.querySelectorAll('[data-count]').forEach(animateCount);
+        }
+
+        function next() {
+            if (current < CONFIG.slides.length - 1) show(current + 1);
+        }
+
+        function prev() {
+            if (current > 1) show(current - 1);
+        }
+
+        function tick(now) {
+            const dt = now - lastFrame;
+            lastFrame = now;
+            const d = duration(current);
+            if (current > 0) {
+                const bar = bars[current - 1];
+                if (d && !paused) {
+                    elapsed += dt;
+                    bar.style.width = Math.min(100, (elapsed / d) * 100) + '%';
+                    if (elapsed >= d) next();
+                } else if (!d) {
+                    bar.style.width = '100%';
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+
+        function animateCount(el) {
+            const target = Number(el.dataset.count);
+            const start = performance.now();
+            const delay = 600;
+            const len = 1800;
+            el.textContent = '0';
+            function step(now) {
+                const t = Math.max(0, Math.min(1, (now - start - delay) / len));
+                const eased = 1 - Math.pow(1 - t, 4);
+                el.textContent = Math.round(target * eased).toLocaleString('es-AR');
+                if (t < 1 && el.closest('.slide').classList.contains('active')) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Tocar a la izquierda = atrás, a la derecha = adelante, mantener apretado = pausa
+        let pressStart = 0;
+        slidesEl.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('button')) return;
+            pressStart = performance.now();
+            paused = true;
+        });
+        slidesEl.addEventListener('pointerup', (e) => {
+            paused = false;
+            if (e.target.closest('button') || !pressStart) return;
+            const held = performance.now() - pressStart;
+            pressStart = 0;
+            if (held > 300) return;
+            if (current === 0) {
+                startMusic();
+                next();
+                return;
+            }
+            if (!duration(current)) return; // pregunta y ticket no se pasan tocando
+            const rect = slidesEl.getBoundingClientRect();
+            if (e.clientX - rect.left < rect.width / 3) prev();
+            else next();
+        });
+        slidesEl.addEventListener('pointercancel', () => {
+            paused = false;
+            pressStart = 0;
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (current === 0) startMusic();
+                if (current === 0 || duration(current)) next();
+            }
+            if (e.key === 'ArrowLeft') prev();
+        });
+
+        /* ---------- Música ---------- */
+        const audio = new Audio();
+        audio.loop = true;
+        let audioOk = false;
+        if (CONFIG.musica) {
+            audio.src = CONFIG.musica;
+            audio.addEventListener('canplay', () => {
+                audioOk = true;
+            }, { once: true });
+        }
+        function startMusic() {
+            if (!CONFIG.musica) return;
+            audio.play().then(() => {
+                soundBtn.style.display = 'block';
+            }).catch(() => {});
+        }
+        soundBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            soundBtn.textContent = audio.muted ? '🔇' : '🔊';
+        });
+
+        /* ---------- Pregunta: el "No" se escapa ---------- */
+        const qIndex = CONFIG.slides.findIndex((s) => s.tipo === 'pregunta');
+        if (qIndex !== -1) {
+            const q = CONFIG.slides[qIndex];
+            const qEl = slideEls[qIndex];
+            const yesBtn = qEl.querySelector('.btn-yes');
+            const noBtn = qEl.querySelector('.btn-no');
+            let noCount = 0;
+
+            function dodge(e) {
+                e.preventDefault();
+                noBtn.textContent = q.mensajesNo[noCount % q.mensajesNo.length];
+                noCount++;
+                const yesSize = parseFloat(getComputedStyle(yesBtn).fontSize);
+                yesBtn.style.fontSize = Math.min(yesSize * 1.25, 64) + 'px';
+
+                const area = qEl.getBoundingClientRect();
+                const wrap = noBtn.parentElement.getBoundingClientRect();
+                noBtn.classList.add('escaping');
+                const bw = noBtn.offsetWidth;
+                const bh = noBtn.offsetHeight;
+                const maxX = area.width - bw - 16;
+                const maxY = area.height - bh - 40;
+                const x = 16 + Math.random() * Math.max(0, maxX - 16);
+                const y = 60 + Math.random() * Math.max(0, maxY - 60);
+                noBtn.style.left = (x - (wrap.left - area.left)) + 'px';
+                noBtn.style.top = (y - (wrap.top - area.top)) + 'px';
+            }
+            noBtn.addEventListener('click', dodge);
+            noBtn.addEventListener('pointerenter', (e) => {
+                if (e.pointerType === 'mouse') dodge(e);
+            });
+            yesBtn.addEventListener('click', () => {
+                next();
+                launchConfetti();
+            });
+        }
+
+        /* ---------- Ticket ---------- */
+        slidesEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            if (btn.dataset.action === 'replay') show(1);
+            if (btn.dataset.action === 'download') downloadTicket();
+        });
+
+        function roundRect(g, x, y, w, h, r) {
+            g.beginPath();
+            g.moveTo(x + r, y);
+            g.arcTo(x + w, y, x + w, y + h, r);
+            g.arcTo(x + w, y + h, x, y + h, r);
+            g.arcTo(x, y + h, x, y, r);
+            g.arcTo(x, y, x + w, y, r);
+            g.closePath();
+        }
+
+        async function downloadTicket() {
+            const t = CONFIG.slides.find((s) => s.tipo === 'ticket');
+            if (document.fonts) await document.fonts.ready;
+            const c = document.createElement('canvas');
+            c.width = 1080;
+            c.height = 1350;
+            const g = c.getContext('2d');
+            const font = (w, px) => `${w} ${px}px Montserrat, system-ui, sans-serif`;
+
+            g.fillStyle = t.fondo;
+            g.fillRect(0, 0, c.width, c.height);
+            g.fillStyle = '#1ed760';
+            g.beginPath(); g.arc(980, 120, 220, 0, Math.PI * 2); g.fill();
+            g.fillStyle = '#f573a0';
+            g.beginPath(); g.arc(90, 1260, 180, 0, Math.PI * 2); g.fill();
+
+            const x = 110, y = 260, w = 860, top = 260, bottom = 520;
+            g.save();
+            g.shadowColor = 'rgba(0,0,0,0.35)';
+            g.shadowBlur = 60;
+            g.shadowOffsetY = 20;
+            g.fillStyle = '#fff';
+            roundRect(g, x, y, w, top + bottom, 40);
+            g.fill();
+            g.restore();
+
+            g.save();
+            roundRect(g, x, y, w, top + bottom, 40);
+            g.clip();
+            g.fillStyle = '#1ed760';
+            g.fillRect(x, y, w, top);
+            g.restore();
+
+            g.fillStyle = t.fondo;
+            g.beginPath(); g.arc(x, y + top, 34, 0, Math.PI * 2); g.fill();
+            g.beginPath(); g.arc(x + w, y + top, 34, 0, Math.PI * 2); g.fill();
+            g.strokeStyle = '#ccc';
+            g.lineWidth = 5;
+            g.setLineDash([18, 14]);
+            g.beginPath(); g.moveTo(x + 50, y + top); g.lineTo(x + w - 50, y + top); g.stroke();
+            g.setLineDash([]);
+
+            g.fillStyle = '#121212';
+            g.font = font(700, 30);
+            g.fillText(`TICKET · ADMITE ${t.admite.toUpperCase()}`, x + 60, y + 100);
+            g.font = font(900, 74);
+            g.fillText(t.evento, x + 60, y + 190, w - 120);
+
+            const field = (label, value, fx, fy) => {
+                g.fillStyle = '#777';
+                g.font = font(700, 26);
+                g.fillText(label.toUpperCase(), fx, fy);
+                g.fillStyle = '#121212';
+                g.font = font(900, 48);
+                g.fillText(value, fx, fy + 60, w - 120);
+            };
+            const by = y + top + 100;
+            field('Fecha', t.fecha, x + 60, by);
+            field('Hora', t.hora, x + 470, by);
+            field('Lugar', t.lugar, x + 60, by + 160);
+            field('Dress code', t.dressCode, x + 60, by + 320);
+
+            g.fillStyle = '#fff';
+            g.font = font(900, 44);
+            g.textAlign = 'center';
+            g.fillText(`💚 ${CONFIG.para} & ${CONFIG.de} ${CONFIG.anio}`, c.width / 2, 1180);
+
+            c.toBlob(async (blob) => {
+                // En el celular abre el menú de compartir (para "Guardar imagen")
+                const file = new File([blob], 'ticket.png', { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({ files: [file] });
+                        return;
+                    } catch (err) {
+                        if (err.name === 'AbortError') return;
+                    }
+                }
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'ticket.png';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            }, 'image/png');
+        }
+
+        /* ---------- Confetti ---------- */
+        function launchConfetti() {
+            const g = confettiCanvas.getContext('2d');
+            const rect = confettiCanvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            confettiCanvas.width = rect.width * dpr;
+            confettiCanvas.height = rect.height * dpr;
+            g.scale(dpr, dpr);
+            const parts = Array.from({ length: 180 }, () => ({
+                x: rect.width / 2,
+                y: rect.height * 0.55,
+                vx: (Math.random() - 0.5) * 14,
+                vy: -Math.random() * 16 - 6,
+                size: 6 + Math.random() * 8,
+                rot: Math.random() * Math.PI,
+                vr: (Math.random() - 0.5) * 0.3,
+                color: BLOB_COLORS[Math.floor(Math.random() * BLOB_COLORS.length)]
+            }));
+            const startT = performance.now();
+            function frame(now) {
+                g.clearRect(0, 0, rect.width, rect.height);
+                parts.forEach((p) => {
+                    p.vy += 0.4;
+                    p.vx *= 0.99;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.rot += p.vr;
+                    g.save();
+                    g.translate(p.x, p.y);
+                    g.rotate(p.rot);
+                    g.fillStyle = p.color;
+                    g.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                    g.restore();
+                });
+                if (now - startT < 4500) requestAnimationFrame(frame);
+                else g.clearRect(0, 0, rect.width, rect.height);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        // Evitar el menú de mantener apretado (se usa para pausar)
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        show(0);
+    </script>
+</body>
+</html>
